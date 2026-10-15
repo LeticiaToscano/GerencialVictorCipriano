@@ -44,7 +44,7 @@ button{font-family:inherit}
 .btn:disabled{opacity:.5;cursor:default}
 
 /* barra de escolha (parceiro + mês + modelo) */
-.escolha{display:grid;grid-template-columns:1.4fr .8fr auto;gap:12px;margin-bottom:16px;align-items:stretch}
+.escolha{display:grid;grid-template-columns:1.4fr .8fr;gap:12px;margin-bottom:16px;align-items:stretch}
 .campo{background:var(--panel-2);border:1px solid var(--line-2);border-radius:13px;padding:10px 14px;position:relative}
 .campo label{display:block;font-size:10px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
 .campo select{width:100%;background:transparent;border:none;color:var(--txt);font-family:'Sora',sans-serif;font-weight:600;font-size:15px;
@@ -210,12 +210,7 @@ tfoot td{border-top:1px solid var(--line-2);color:var(--txt);font-weight:700;fon
     <div class="escolha">
       <div class="campo"><label>Parceiro</label><select id="selParc"></select></div>
       <div class="campo"><label>Competência</label><select id="selMes"></select></div>
-      <div class="modelo">
-        <div class="ml">Modelo de comissionamento</div>
-        <div class="seg"><button data-m="novo">Novo · bônus</button><button data-m="antigo">Antigo · R$ 0,03</button></div>
-      </div>
     </div>
-    <div class="aviso-sim oculto" id="avisoSim"></div>
 
     <div id="painel">
       <div class="hero">
@@ -373,7 +368,8 @@ function telaCodigo(factorId, cadastro, msg){
 el('sair').onclick = async () => { await SB.auth.signOut(); location.reload(); };
 
 /* ===================== DADOS ===================== */
-let PARCEIROS = [], P = null, MODELO = 'novo', ORD = {k:'res', d:-1}, ABERTO = new Set();
+const MODELO = 'novo';  // painel do comercial mostra só o modelo novo
+let PARCEIROS = [], P = null, ORD = {k:'res', d:-1}, ABERTO = new Set();
 
 async function abrir(){
   tela('<div class="giro"></div><h1>Carregando…</h1>');
@@ -387,7 +383,7 @@ async function abrir(){
   const r = await SB.rpc('comercial_parceiros');
   if(r.error) return tela('<h1>Não foi possível carregar</h1><p>' + esc(r.error.message) + '</p>');
   PARCEIROS = r.data || [];
-  if(!PARCEIROS.length) return tela('<h1>Nenhum parceiro na sua carteira</h1><p>Peça à Seja Livre para cadastrar os seus parceiros.</p>');
+  if(!PARCEIROS.length) return tela('<h1>Nenhum parceiro liberado</h1><p>Os parceiros aparecem aqui depois que a Seja Livre autoriza no gerencial.</p>');
 
   const sel = el('selParc');
   const grupos = {};
@@ -416,7 +412,6 @@ async function carregar(id, comp){
   }
   P = r.data; ABERTO.clear();
   const info = PARCEIROS.find(p => p.id === id) || {};
-  if(!comp) MODELO = modeloOficial();
   montarMeses(); render();
 }
 
@@ -430,7 +425,6 @@ function montarMeses(){
     : '<option>sem movimento</option>';
 }
 
-document.querySelectorAll('.seg button').forEach(b => b.onclick = () => { MODELO = b.dataset.m; render(); });
 
 /* Valores do mês no modelo escolhido. Os totais vêm do banco (mesma conta do gerencial). */
 function contas(m){
@@ -448,22 +442,12 @@ function contas(m){
 /* ===================== TELA ===================== */
 function render(){
   const m = mesAtual();
-  const oficial = modeloOficial();
-  document.querySelectorAll('.seg button').forEach(b => {
-    b.classList.toggle('on', b.dataset.m === MODELO);
-    b.title = b.dataset.m === oficial ? 'modelo usado no pagamento' : 'simulação';
-  });
-  const sim = MODELO !== oficial;
-  el('avisoSim').classList.toggle('oculto', !sim);
-  el('avisoSim').innerHTML = '<b>Simulação</b> · o pagamento deste parceiro é feito no modelo ' + (oficial === 'novo' ? 'novo (bônus por faixa)' : 'antigo (R$ 0,03 por contrato)') +
-    '. Os valores abaixo mostram como ficaria no outro modelo e não alteram o fechamento.';
 
   el('hNome').textContent = P.parceiro;
   document.title = P.parceiro + ' · Painel Comercial';
   el('hMeta').innerHTML = 'Barra <b>' + esc(P.barra) + '</b>' + (P.etiqueta ? ' · clientes com a etiqueta <b>' + esc(P.etiqueta) + '</b>' : '') +
     '<br>Competência <b>' + (m ? esc(mesNome(m.competencia)) : '—') + '</b>';
   const tags = [];
-  tags.push('<span class="tag c">Modelo ' + oficial + '</span>');
   if(m) tags.push(m.status === 'pago' ? '<span class="tag g">Pago</span>' : '<span class="tag o">Em aberto</span>');
   if(P.etiqueta) tags.push('<span class="tag o">Barra compartilhada</span>');
   el('hTags').innerHTML = tags.join('');
