@@ -332,6 +332,8 @@ function telaLogin(msg){
 }
 
 async function passoMfa(){
+  // este painel entra só com e-mail e senha, sem o código do celular (pedido de 21/10)
+  return abrir();
   const { data: aal } = await SB.auth.mfa.getAuthenticatorAssuranceLevel();
   if(aal && aal.currentLevel === 'aal2') return abrir();
   const { data: f } = await SB.auth.mfa.listFactors();
