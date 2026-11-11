@@ -466,11 +466,11 @@ function render(){
   el('liqBig').textContent = money(c.liq);
   el('liqBig').classList.toggle('neg', c.liq < 0);
   el('liqNote').innerHTML =
-    c.negativo ? 'Os custos de plataforma passaram da receita' + (MODELO === 'novo' ? ' e do bônus' : '') + '. <b>Não há imposto sobre prejuízo e nada é descontado do parceiro</b>: o valor do mês fica zerado.'
-    : 'Valores na parte do parceiro (' + pct(c.pctP) + '), pela mesma conta do fechamento da Seja Livre.';
+    c.negativo ? 'Os custos de plataforma passaram da receita e do bônus. <b>Não há imposto sobre prejuízo e nada é descontado do parceiro</b>: o valor do mês fica zerado.'
+    : '';
   el('wRec').textContent = money(c.rec);
   el('wPlat').textContent = money(c.plat);
-  el('wExtraNome').textContent = MODELO === 'novo' ? 'Bônus (faixas)' : 'R$ 0,03 × contratos';
+  el('wExtraNome').textContent = 'Bônus';
   el('wExtra').textContent = '+ ' + money(c.extra);
   el('wTot').textContent = money(c.total);
   el('wImpPct').textContent = pct(c.impPct);
@@ -512,7 +512,7 @@ function renderFaixas(){
 /* ---------- evolução ---------- */
 function renderEvolucao(){
   const meses = (P.meses || []).filter(m => N(m.receita) || N(m.contratos) || N(m.bonus) || N(m.custos));
-  el('evoExtra').textContent = MODELO === 'novo' ? 'Bônus' : 'R$ 0,03 × ctr';
+  el('evoExtra').textContent = 'Bônus';
   if(!meses.length){ el('bars').innerHTML = ''; el('barsX').innerHTML = ''; el('evoCorpo').innerHTML = '<tr><td colspan="8" class="vazio">Sem movimento no ano.</td></tr>'; return; }
   const vals = meses.map(m => contas(m).liq), mx = Math.max(1, ...vals);
   el('bars').innerHTML = meses.map((m, i) => '<div class="bar' + (vals[i] <= 0 ? ' zero' : '') + (m.competencia === P.competencia ? ' active' : '') + '" data-c="' + m.competencia + '">' +
